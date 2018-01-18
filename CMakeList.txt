@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 2.8)
+
+project(searchparked)
+
+add_executable(searchparked searchparked.cpp)
+
+target_link_libraries(searchparked)
