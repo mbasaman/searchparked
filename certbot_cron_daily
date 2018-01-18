@@ -1,0 +1,40 @@
+#! /bin/sh
+
+DATEFORMAT=`date`
+DAY=`date +%a`
+
+if [ $DAY != "Sun" ]; then
+	echo "$DATEFORMAT - $DAY - Skipping letsencrypt certificate renewal" >> /var/log/certbot.log
+	exit
+fi
+
+NOW=`date +%s`
+HOSTNAME=`hostname`
+VALID=0
+
+for line in `certbot certificates 2>/dev/null|grep "Expiry Date"|cut -d':' -f6|cut -d' ' -f2`;
+do
+	if [ $line -lt 25 ];
+	then
+		VALID=1	
+	fi	
+done
+
+if [ $VALID -eq 0 ];
+then
+	echo "$DATEFORMAT - No need to renew certs on $HOSTNAME - current cert valid for $VALID more days" >> /var/log/certbot.log
+	exit
+fi
+
+echo "$DATEFORMAT - Adding port 443 to iptables renew letsencrypt certificate" >> /var/log/certbot.log
+touch /opt/search/lock/certbot
+iptables -A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+/usr/bin/certbot renew 1>>/var/log/certbot.log 2>>/var/log/certbot.log
+iptables -D INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+rm /opt/search/lock/certbot
+echo "$DATEFORMAT - Removed port 443 to iptables after letsencrypt certificate renewal" >> /var/log/certbot.log
+fi
+
+VALID=`certbot certificates 2>/dev/null|grep "Expiry Date"|cut -d':' -f6|cut -d' ' -f2`
+
+echo "$DATEFORMAT - Renewed letsencrypt certificate - valid for $VALID days" >> /var/log/certbot.log
