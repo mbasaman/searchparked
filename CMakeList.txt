@@ -1,8 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
 
+project(searchparked)
+
 SET(CMAKE_CXX_FLAGS "-std=gnu++11")
 
-project(searchparked)
+include(FindPkgConfig)
+
+find_package(Boost REQUIRED COMPONENTS thread)
 
 add_executable(searchparked searchparked.cpp)
 
