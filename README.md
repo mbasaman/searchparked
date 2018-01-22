@@ -1,2 +1,2 @@
 # searchparked
-open search engine with no advertisments
+search engine with no advertisments
